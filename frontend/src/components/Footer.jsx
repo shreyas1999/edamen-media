@@ -13,9 +13,9 @@ export default function Footer() {
             Behind the internet&apos;s next creators. We help ambitious people and
             companies turn attention into leverage.
           </p>
-          <Link to="/apply" data-testid="footer-cta" className="btn-ghost mt-8">
+          <a href="https://calendly.com/edamenmedia/discoverycall" data-testid="footer-cta" className="btn-ghost mt-8" target="_blank" rel="noopener noreferrer">
             Work With Us <ArrowUpRight size={14} />
-          </Link>
+          </a>
         </div>
 
         <div className="md:col-span-2">
@@ -40,8 +40,8 @@ export default function Footer() {
           <div className="text-xs uppercase tracking-[0.18em] text-[#A1A1AA] mb-4">Connect</div>
           <ul className="space-y-3 text-sm text-[#F5F5F5]/85">
             <li><a href="mailto:hello@edamenmedia.com" className="hover:text-white">hello@edamenmedia.com</a></li>
-            <li><a href="https://x.com/edamenmedia" target="_blank" rel="noreferrer" className="hover:text-white">X / Twitter</a></li>
-            <li><a href="https://instagram.com/edamenmedia" target="_blank" rel="noreferrer" className="hover:text-white">Instagram</a></li>
+            <li><a href="https://x.com/edamenmedia" target="_blank" rel="noopener noreferrer" className="hover:text-white">X / Twitter</a></li>
+            <li><a href="https://instagram.com/edamenmedia" target="_blank" rel="noopener noreferrer" className="hover:text-white">Instagram</a></li>
           </ul>
         </div>
       </div>
