@@ -46,9 +46,9 @@ export default function Home() {
           </Reveal>
           <Reveal delay={0.2}>
             <div className="mt-12 flex flex-wrap items-center gap-4">
-              <Link to="/apply" data-testid="hero-cta-work" className="btn-primary">
+              <a href="https://calendly.com/edamenmedia/discoverycall" data-testid="hero-cta-work" className="btn-primary" target="_blank" rel="noopener noreferrer">
                 Work With Us <ArrowUpRight size={16} />
-              </Link>
+              </a>
               <Link to="/apply" data-testid="hero-cta-apply" className="btn-ghost">
                 Apply for Representation <ArrowRight size={14} />
               </Link>
@@ -189,7 +189,7 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
               { tag: "Founder Brand", title: "From operator to category voice.", metric: "0 → 184k", sub: "in 9 months" },
-              { tag: "Creator", title: "Audience to enterprise opportunities.", metric: "$1.4M", sub: "partnership value" },
+              { tag: "Creator", title: "Audience converted into enterprise opportunities.", metric: "$1.4M", sub: "partnership value" },
               { tag: "Startup", title: "A media engine that compounds.", metric: "37x", sub: "qualified inbound" },
             ].map((w, i) => (
               <Reveal key={w.title} delay={0.05 * i}>
@@ -221,9 +221,9 @@ export default function Home() {
           </div>
           <div className="lg:col-span-4 flex flex-col gap-4 lg:items-end">
             <Reveal delay={0.1}>
-              <Link to="/apply" data-testid="cta-strip-work" className="btn-primary">
+              <a href="https://calendly.com/edamenmedia/discoverycall" data-testid="cta-strip-work" className="btn-primary" target="_blank" rel="noopener noreferrer">
                 Work With Us <ArrowUpRight size={16} />
-              </Link>
+              </a>
             </Reveal>
             <Reveal delay={0.15}>
               <Link to="/apply" data-testid="cta-strip-apply" className="btn-ghost">
