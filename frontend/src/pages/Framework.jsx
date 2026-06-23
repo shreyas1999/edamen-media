@@ -1,6 +1,5 @@
 import LeverageFramework from "@/components/LeverageFramework";
 import Reveal from "@/components/Reveal";
-import { Link } from "react-router-dom";
 import { ArrowUpRight } from "lucide-react";
 
 const STEPS = [
@@ -73,9 +72,9 @@ export default function Framework() {
           <h2 className="display text-[#F5F5F5] text-4xl md:text-5xl tracking-tightest max-w-2xl">
             See the framework applied to your work.
           </h2>
-          <Link to="/apply" data-testid="framework-cta" className="btn-primary">
+          <a href="https://calendly.com/edamenmedia/discoverycall" data-testid="framework-cta" className="btn-primary" target="_blank" rel="noopener noreferrer">
             Work With Us <ArrowUpRight size={16} />
-          </Link>
+          </a>
         </div>
       </section>
     </div>
