@@ -1,56 +1,48 @@
-import { useEffect } from "react";
 import "@/App.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import axios from "axios";
-import { HOME } from "@/constants/testIds";
+import Nav from "@/components/Nav";
+import Footer from "@/components/Footer";
+import { Toaster } from "@/components/ui/sonner";
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
+import Home from "@/pages/Home";
+import Framework from "@/pages/Framework";
+import BrandBuilding from "@/pages/BrandBuilding";
+import CreatorRepresentation from "@/pages/CreatorRepresentation";
+import Work from "@/pages/Work";
+import About from "@/pages/About";
+import Contact from "@/pages/Contact";
+import Apply from "@/pages/Apply";
+import AdminLogin from "@/pages/AdminLogin";
+import AdminDashboard from "@/pages/AdminDashboard";
 
-const Home = () => {
-  const helloWorldApi = async () => {
-    try {
-      const response = await axios.get(`${API}/`);
-      console.log(response.data.message);
-    } catch (e) {
-      console.error(e, `errored out requesting / api`);
-    }
-  };
-
-  useEffect(() => {
-    helloWorldApi();
-  }, []);
-
+function PublicLayout({ children }) {
   return (
-    <div>
-      <header className="App-header">
-        <a
-          data-testid={HOME.emergentLink}
-          className="App-link"
-          href="https://emergent.sh"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img src="https://avatars.githubusercontent.com/in/1201222?s=120&u=2686cf91179bbafbc7a71bfbc43004cf9ae1acea&v=4" />
-        </a>
-        <p className="mt-5">Building something incredible ~!</p>
-      </header>
-    </div>
+    <>
+      <Nav />
+      <main className="pt-20">{children}</main>
+      <Footer />
+    </>
   );
-};
+}
 
-function App() {
+export default function App() {
   return (
     <div className="App">
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Home />}>
-            <Route index element={<Home />} />
-          </Route>
+          <Route path="/" element={<PublicLayout><Home /></PublicLayout>} />
+          <Route path="/framework" element={<PublicLayout><Framework /></PublicLayout>} />
+          <Route path="/brand-building" element={<PublicLayout><BrandBuilding /></PublicLayout>} />
+          <Route path="/creator-representation" element={<PublicLayout><CreatorRepresentation /></PublicLayout>} />
+          <Route path="/work" element={<PublicLayout><Work /></PublicLayout>} />
+          <Route path="/about" element={<PublicLayout><About /></PublicLayout>} />
+          <Route path="/contact" element={<PublicLayout><Contact /></PublicLayout>} />
+          <Route path="/apply" element={<PublicLayout><Apply /></PublicLayout>} />
+          <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/admin" element={<AdminDashboard />} />
         </Routes>
       </BrowserRouter>
+      <Toaster theme="dark" position="bottom-right" />
     </div>
   );
 }
-
-export default App;
