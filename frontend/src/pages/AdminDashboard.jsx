@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { LogOut, RefreshCw, Search, X, Download } from "lucide-react";
 import { api, auth } from "@/lib/api";
@@ -25,15 +25,7 @@ export default function AdminDashboard() {
   const [selected, setSelected] = useState(null);
   const [notes, setNotes] = useState("");
 
-  useEffect(() => {
-    if (!auth.isAuthed()) {
-      nav("/admin/login");
-      return;
-    }
-    refresh();
-  }, []);
-
-  async function refresh() {
+  const refresh = useCallback(async () => {
     setLoading(true);
     try {
       const [a, s] = await Promise.all([
@@ -52,9 +44,19 @@ export default function AdminDashboard() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [filter, nav]);
 
-  useEffect(() => { if (auth.isAuthed()) refresh(); }, [filter]);
+  useEffect(() => {
+    if (!auth.isAuthed()) {
+      nav("/admin/login");
+      return;
+    }
+    refresh();
+  }, [nav, refresh]);
+
+  useEffect(() => {
+    if (auth.isAuthed()) refresh();
+  }, [refresh]);
 
   const filtered = useMemo(() => {
     if (!query.trim()) return apps;
