@@ -1,0 +1,69 @@
+{
+  "theme": "Dark",
+  "archetype": "Swiss & High-Contrast (Dark Mode Variant) with Luxury Apple-like aesthetics",
+  "brand_philosophy": "Attention → Leverage. Premium. Quiet. Confident. Internet-native.",
+  "colors": {
+    "primary": "#090909",
+    "secondary": "#111111",
+    "card": "#181818",
+    "text": "#F5F5F5",
+    "muted": "#A1A1AA",
+    "accent": "#FFFFFF",
+    "optional_accents": {
+      "electric_blue": "#2563EB",
+      "warm_gold": "#F59E0B"
+    }
+  },
+  "typography": {
+    "headings": "system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Neue Montreal', sans-serif",
+    "body": "Inter",
+    "heading_classes": "tracking-tighter font-medium text-[#F5F5F5]",
+    "body_classes": "font-normal text-[#A1A1AA] leading-relaxed",
+    "rules": "Huge spacing, few words, editorial layout. Do not center everything; use asymmetry. Max heading size text-5xl to text-6xl."
+  },
+  "layout": {
+    "spacing_system": "Generous spacing. py-24 to py-32 for major sections. gap-16 to gap-24 for grids.",
+    "bento_grid": "Grid 12-columns, asymmetrical spans (e.g., col-span-8, col-span-4). Avoid standard 3-column bootstrap looks.",
+    "general": "Max-width 7xl containers. Ensure breathing room around typography.",
+    "surfaces": "Cards should use #181818 with 1px border border-white/10 and subtle inner glow. No heavy drop shadows. Glassmorphism for sticky nav: backdrop-blur-xl bg-[#090909]/60."
+  },
+  "components": {
+    "navigation": "Sticky top, glassmorphic header. Minimal links. Work With Us CTA.",
+    "hero": "Headline: 'Behind The Internet's Next Creators.' Subheadline: 'We help ambitious people and companies turn attention into leverage.' Dual CTAs. Abstract animated dark gradient backdrop.",
+    "edamen_framework_visual": "A large (min 500x500) animated circular SVG/Framer Motion component. Center: 'ATTENTION' (glowing slightly). Outer Ring: continuous rotation of text 'CONTENT → DISTRIBUTION → TRUST → OPPORTUNITIES → PARTNERSHIPS → LEVERAGE → COMPOUNDING → ATTENTION'. Thin strokes (1px), subtle Apple-style motion.",
+    "divisions": "Two distinct sections: 'Brand Building' and 'Creator Representation'. Use Bento grids for services. Large typography.",
+    "work_section": "Storytelling-driven case studies. Not small portfolio cards, but large editorial image + text overlay layouts.",
+    "about_section": "Founder-led, mission-driven text. Clean typography focus.",
+    "multi_step_form": "Dedicated page for 'Apply for Representation'. Shadcn form, multi-step wizard, store in DB. Fields: Basic Info, Social Profiles, Audience Insights, Analytics, Media Kit, etc.",
+    "admin_dashboard": "Protected route. Minimal Shadcn table for managing applications. Status badges: New, Reviewing, Qualified, Call Scheduled, Signed, Rejected."
+  },
+  "animations": {
+    "scroll_reveals": "Framer Motion. Fade in and slide up slightly as elements enter viewport. Use staggered children for lists.",
+    "micro_interactions": "Buttons: subtle scale/brightness change. Cards: slight lift and border illumination on hover. Framework visual: slow, continuous, infinite rotation.",
+    "parallax": "Subtle parallax on hero background abstract images to simulate depth (Apple Vision Pro style)."
+  },
+  "accessibility": {
+    "contrast": "Ensure text meets APCA standards. Muted text must be legible.",
+    "data_testid": "MANDATORY: Add 'data-testid' to all buttons, form inputs, links, and major interactive elements."
+  },
+  "media": {
+    "hero_background": "https://images.pexels.com/photos/7640905/pexels-photo-7640905.jpeg",
+    "framework_texture": "https://images.pexels.com/photos/26628057/pexels-photo-26628057.jpeg",
+    "work_case_studies": [
+      "https://images.unsplash.com/photo-1581547848331-0aba76655842",
+      "https://images.pexels.com/photos/37033739/pexels-photo-37033739.jpeg"
+    ],
+    "about_vibe": [
+      "https://images.pexels.com/photos/17187918/pexels-photo-17187918.jpeg",
+      "https://images.unsplash.com/photo-1472803828399-39d4ac53c6e5"
+    ]
+  },
+  "instructions_to_main_agent": [
+    "Configure tailwind.config.js with the exact colors from this JSON.",
+    "Use lucide-react for thin, minimal icons. Avoid chunky generic icons.",
+    "Build the 'Edamen Leverage Framework' as a bespoke React component using Framer Motion. It should look proprietary and highly polished.",
+    "The admin dashboard must be functional with a mocked backend or real local DB to store the multi-step form submissions.",
+    "Apply 'data-testid' attributes extensively to ensure UI testability.",
+    "Achieve the 'Linear/Apple' look by relying on 1px borders, generous whitespace, #181818 surface colors, and typography rather than heavy styling."
+  ]
+}
