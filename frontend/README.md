@@ -1,70 +1,99 @@
-# Getting Started with Create React App
+# Edamen Media Frontend
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Modern React frontend for Edamen Media built with Vite, Tailwind CSS, and Framer Motion.
 
-## Available Scripts
+## Setup
 
-In the project directory, you can run :
+### Prerequisites
+- Node.js 18+
+- Yarn or npm
 
-### `npm start`
+### Installation
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+```bash
+cd frontend
+npm install
+# or
+yarn install
+```
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### Environment Configuration
 
-### `npm test`
+1. Copy `.env.example` to `.env.local`:
+```bash
+cp .env.example .env.local
+```
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+2. Update `REACT_APP_BACKEND_URL` in `.env.local` to point to your backend server:
+```
+REACT_APP_BACKEND_URL=http://localhost:5000
+```
 
-### `npm run build`
+## Development
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+Start the development server:
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+```bash
+npm start
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+The app will open at `http://localhost:3000` by default.
 
-### `npm run eject`
+## Build
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+Create a production build:
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+```bash
+npm run build
+```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+## Testing
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+Run tests:
 
-## Learn More
+```bash
+npm test
+```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## Project Structure
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+```
+src/
+├── components/      # Reusable React components
+├── pages/          # Page components
+├── lib/            # Utilities and API client
+├── App.js          # Main app component
+├── App.css         # App-level styles
+└── index.css       # Global styles and Tailwind directives
+```
 
-### Code Splitting
+## Key Technologies
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+- **React 19** - UI library
+- **React Router 7** - Client-side routing
+- **Tailwind CSS** - Utility-first CSS framework
+- **Framer Motion** - Animation library
+- **Lucide React** - Icon library
+- **Axios** - HTTP client
+- **React Query** - Server state management
 
-### Analyzing the Bundle Size
+## Troubleshooting
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+### Build fails or styles don't load
+1. Clear `node_modules` and reinstall:
+   ```bash
+   rm -rf node_modules package-lock.json
+   npm install
+   ```
+2. Clear Craco cache:
+   ```bash
+   rm -rf .cache
+   npm start
+   ```
 
-### Making a Progressive Web App
+### Backend API errors
+Ensure `REACT_APP_BACKEND_URL` in `.env.local` points to your running backend server.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+## License
 
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Private
