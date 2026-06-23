@@ -56,9 +56,9 @@ export default function Nav() {
         </nav>
 
         <div className="hidden lg:flex items-center gap-3">
-          <Link to="/apply" data-testid="nav-cta-work" className="btn-primary">
+          <a href="https://calendly.com/edamenmedia/discoverycall" data-testid="nav-cta-work" className="btn-primary" target="_blank" rel="noopener noreferrer">
             Work With Us <ArrowUpRight size={16} />
-          </Link>
+          </a>
         </div>
 
         <button
@@ -84,9 +84,9 @@ export default function Nav() {
                 {l.label}
               </Link>
             ))}
-            <Link to="/apply" data-testid="nav-mobile-cta" className="btn-primary justify-center mt-2">
+            <a href="https://calendly.com/edamenmedia/discoverycall" data-testid="nav-mobile-cta" className="btn-primary justify-center mt-2" target="_blank" rel="noopener noreferrer">
               Work With Us <ArrowUpRight size={16} />
-            </Link>
+            </a>
           </div>
         </div>
       )}
