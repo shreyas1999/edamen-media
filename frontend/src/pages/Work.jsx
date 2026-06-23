@@ -56,7 +56,7 @@ export default function Work() {
           </Reveal>
           <Reveal delay={0.1}>
             <p className="mt-8 text-[#A1A1AA] text-lg max-w-2xl leading-relaxed">
-              We don&apos;t ship deliverables. We ship outcomes. A small selection of
+              We don't ship deliverables. We ship outcomes. A small selection of
               long-form partnerships with the kind of people we exist to serve.
             </p>
           </Reveal>
@@ -109,9 +109,9 @@ export default function Work() {
           <h2 className="display text-[#F5F5F5] text-4xl md:text-5xl tracking-tightest max-w-2xl">
             Be the next outcome.
           </h2>
-          <Link to="/apply" data-testid="work-cta" className="btn-primary">
+          <a href="https://calendly.com/edamenmedia/discoverycall" data-testid="work-cta" className="btn-primary" target="_blank" rel="noopener noreferrer">
             Work With Us <ArrowUpRight size={16} />
-          </Link>
+          </a>
         </div>
       </section>
     </div>
