@@ -1,8 +1,8 @@
-"""Email notifications via Resend.
+"""Telegram notifications for new applications.
 
-Sends a transactional email to NOTIFY_EMAIL_TO whenever a new partnership
-application is created. Best-effort: never blocks the request, silently
-no-ops if env vars are not configured.
+Posts an HTML-formatted snapshot to the configured TELEGRAM_CHAT_ID via the
+Bot API. Best-effort: never blocks the request, silently no-ops if env vars
+are not configured. Splits long messages to respect Telegram's 4096-char cap.
 """
 from __future__ import annotations
 import asyncio
@@ -11,15 +11,19 @@ import logging
 import os
 from typing import Any, Dict, List, Tuple
 
+import requests
+
 logger = logging.getLogger(__name__)
 
-API_KEY = os.environ.get("RESEND_API_KEY", "").strip()
-SENDER = os.environ.get("SENDER_EMAIL", "").strip() or "onboarding@resend.dev"
-TO = os.environ.get("NOTIFY_EMAIL_TO", "").strip()
+BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "").strip()
+CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "").strip()
+
+API_BASE = "https://api.telegram.org"
+MAX_LEN = 3800  # safe under Telegram's 4096 hard cap
 
 
 def is_enabled() -> bool:
-    return bool(API_KEY and TO)
+    return bool(BOT_TOKEN and CHAT_ID)
 
 
 _FIELDS: List[Tuple[str, str]] = [
@@ -52,39 +56,19 @@ _FIELDS: List[Tuple[str, str]] = [
     ("Open questions", "open_questions"),
 ]
 
+LINK_FIELDS = {"analytics_url", "media_kit_url", "portfolio_url"}
+
 
 def _esc(v: Any) -> str:
     if v is None:
         return ""
-    return html_lib.escape(str(v))
+    return html_lib.escape(str(v), quote=False)
 
 
-def _link(v: str) -> str:
-    if not v:
-        return ""
-    safe = html_lib.escape(v, quote=True)
-    return f'<a href="{safe}" style="color:#2563EB;text-decoration:none">{safe}</a>'
-
-
-def _row(label: str, value: str, is_link: bool = False) -> str:
-    if not value:
-        return ""
-    cell = _link(value) if is_link else _esc(value).replace("\n", "<br>")
-    return (
-        f'<tr>'
-        f'<td style="padding:8px 12px;border-bottom:1px solid #1f1f1f;'
-        f'color:#A1A1AA;font:11px/1.5 -apple-system,Inter,Arial,sans-serif;'
-        f'text-transform:uppercase;letter-spacing:0.18em;width:200px;vertical-align:top">{html_lib.escape(label)}</td>'
-        f'<td style="padding:8px 12px;border-bottom:1px solid #1f1f1f;'
-        f'color:#F5F5F5;font:14px/1.55 -apple-system,Inter,Arial,sans-serif;vertical-align:top">{cell}</td>'
-        f'</tr>'
-    )
-
-
-def _socials_html(socials: Any) -> str:
+def _format_socials(socials: Any) -> str:
     if not isinstance(socials, list) or not socials:
         return ""
-    items = []
+    lines = []
     for s in socials:
         if not isinstance(s, dict):
             continue
@@ -92,79 +76,91 @@ def _socials_html(socials: Any) -> str:
         handle = _esc(s.get("handle") or "")
         followers = _esc(s.get("followers") or "")
         url = s.get("url") or ""
-        link = _link(url) if url else ""
-        items.append(
-            f'<li style="margin:0 0 6px 0;color:#F5F5F5;font:14px/1.55 -apple-system,Inter,Arial,sans-serif">'
-            f'<span style="color:#A1A1AA">{platform}</span> · {handle} · {followers} {("· " + link) if link else ""}'
-            f'</li>'
-        )
-    return (
-        '<tr><td colspan="2" style="padding:16px 12px 4px 12px;color:#A1A1AA;'
-        'font:11px/1.5 -apple-system,Inter,Arial,sans-serif;text-transform:uppercase;letter-spacing:0.18em">Social profiles</td></tr>'
-        f'<tr><td colspan="2" style="padding:0 12px 12px 12px"><ul style="margin:0;padding-left:18px">{"".join(items)}</ul></td></tr>'
-    )
+        link_part = ""
+        if url:
+            url_safe = html_lib.escape(url, quote=True)
+            link_part = f' · <a href="{url_safe}">link</a>'
+        bits = [b for b in [platform, handle, followers] if b]
+        lines.append("• " + " · ".join(bits) + link_part)
+    return "\n".join(lines)
 
 
-def _build_html(app: Dict[str, Any]) -> str:
-    rows = []
+def _build_message(app: Dict[str, Any]) -> str:
+    name = _esc(app.get("full_name") or "Unknown")
+    email = _esc(app.get("email") or "")
+    parts = [
+        "<b>📥 New Edamen Application</b>",
+        f"<b>{name}</b>" + (f" · {email}" if email else ""),
+        "",
+    ]
     for label, key in _FIELDS:
+        if key in ("full_name", "email"):
+            continue
         v = app.get(key)
         if v is None or v == "":
             continue
-        is_link = key in {"analytics_url", "media_kit_url", "portfolio_url"}
-        rows.append(_row(label, str(v), is_link=is_link))
+        if key in LINK_FIELDS:
+            url_safe = html_lib.escape(str(v), quote=True)
+            value_html = f'<a href="{url_safe}">{_esc(v)}</a>'
+        else:
+            value_html = _esc(v)
+        parts.append(f"<b>{_esc(label)}:</b> {value_html}")
 
-    socials = _socials_html(app.get("social_profiles"))
+    socials = _format_socials(app.get("social_profiles"))
+    if socials:
+        parts.append("")
+        parts.append("<b>Social profiles</b>")
+        parts.append(socials)
 
-    return f"""\
-<!doctype html>
-<html><body style="margin:0;padding:24px;background:#090909;color:#F5F5F5;font-family:-apple-system,Inter,Arial,sans-serif">
-  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width:640px;margin:0 auto;background:#0c0c0c;border:1px solid #1f1f1f;border-radius:12px;overflow:hidden">
-    <tr>
-      <td style="padding:24px 24px 8px 24px">
-        <div style="font:11px/1.5 -apple-system,Inter,Arial,sans-serif;color:#A1A1AA;text-transform:uppercase;letter-spacing:0.28em">Edamen Media — New Application</div>
-        <h1 style="margin:8px 0 0 0;font:500 28px/1.15 -apple-system,'SF Pro Display',Arial,sans-serif;letter-spacing:-0.02em;color:#F5F5F5">{_esc(app.get("full_name") or "—")}</h1>
-        <div style="margin:4px 0 0 0;color:#A1A1AA;font:14px/1.5 -apple-system,Inter,Arial,sans-serif">{_esc(app.get("email") or "")}</div>
-      </td>
-    </tr>
-    <tr><td style="padding:0 12px 12px 12px"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
-      {''.join(rows)}
-      {socials}
-    </table></td></tr>
-    <tr>
-      <td style="padding:16px 24px 24px 24px;border-top:1px solid #1f1f1f">
-        <div style="color:#A1A1AA;font:12px/1.5 -apple-system,Inter,Arial,sans-serif">
-          ID: {_esc(app.get("id") or "—")} · Status: {_esc(app.get("status") or "New")} · Submitted: {_esc(app.get("created_at") or "—")}
-        </div>
-      </td>
-    </tr>
-  </table>
-</body></html>"""
+    parts.append("")
+    parts.append(f"<i>ID:</i> <code>{_esc(app.get('id') or '—')}</code>")
+    parts.append(f"<i>Submitted:</i> {_esc(app.get('created_at') or '—')}")
+    return "\n".join(parts)
 
 
-def _send_sync(subject: str, html: str) -> str:
-    import resend  # lazy import
+def _chunk(text: str, limit: int = MAX_LEN) -> List[str]:
+    if len(text) <= limit:
+        return [text]
+    chunks: List[str] = []
+    remaining = text
+    while remaining:
+        if len(remaining) <= limit:
+            chunks.append(remaining)
+            break
+        cut = remaining.rfind("\n", 0, limit)
+        if cut == -1:
+            cut = limit
+        chunks.append(remaining[:cut])
+        remaining = remaining[cut:].lstrip("\n")
+    return chunks
 
-    resend.api_key = API_KEY
-    res = resend.Emails.send({
-        "from": SENDER,
-        "to": [TO],
-        "subject": subject,
-        "html": html,
-    })
-    return (res or {}).get("id", "")
+
+def _send_sync(text: str) -> bool:
+    url = f"{API_BASE}/bot{BOT_TOKEN}/sendMessage"
+    payload = {
+        "chat_id": CHAT_ID,
+        "text": text,
+        "parse_mode": "HTML",
+        "disable_web_page_preview": True,
+    }
+    r = requests.post(url, json=payload, timeout=10)
+    if r.status_code != 200:
+        logger.warning("Telegram non-200 (%s): %s", r.status_code, r.text[:300])
+        return False
+    return True
 
 
 async def notify_new_application(app_doc: Dict[str, Any]) -> bool:
     if not is_enabled():
         return False
     try:
-        name = app_doc.get("full_name") or "Unknown"
-        subject = f"New Edamen application — {name}"
-        html = _build_html(app_doc)
-        sid = await asyncio.to_thread(_send_sync, subject, html)
-        logger.info("Application email sent: id=%s", sid)
+        text = _build_message(app_doc)
+        for chunk in _chunk(text):
+            ok = await asyncio.to_thread(_send_sync, chunk)
+            if not ok:
+                return False
+        logger.info("Telegram notification sent for application %s", app_doc.get("id"))
         return True
     except Exception as e:
-        logger.exception("Resend email failed: %s", e)
+        logger.exception("Telegram send failed: %s", e)
         return False

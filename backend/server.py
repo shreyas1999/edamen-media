@@ -79,7 +79,7 @@ async def health():
     return {
         "ok": True,
         "sheets_enabled": sheets.is_enabled(),
-        "email_enabled": notifier.is_enabled(),
+        "telegram_enabled": notifier.is_enabled(),
         "time": datetime.now(timezone.utc).isoformat(),
     }
 
@@ -108,9 +108,9 @@ async def create_application(payload: ApplicationCreate):
     await db.applications.insert_one({**doc})
     # Best-effort sheets append (does not block on errors)
     synced = await sheets.append_application(doc)
-    # Best-effort email notification
-    emailed = await notifier.notify_new_application(doc)
-    logger.info("New application %s synced=%s emailed=%s", app_obj.id, synced, emailed)
+    # Best-effort Telegram notification
+    notified = await notifier.notify_new_application(doc)
+    logger.info("New application %s synced=%s telegram=%s", app_obj.id, synced, notified)
     return app_obj
 
 
