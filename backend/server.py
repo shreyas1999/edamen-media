@@ -1,4 +1,7 @@
 """Edamen Media backend — FastAPI app."""
+import csv
+import io
+import json
 import logging
 import os
 from datetime import datetime, timezone
@@ -7,6 +10,7 @@ from typing import List, Optional
 
 from dotenv import load_dotenv
 from fastapi import APIRouter, FastAPI, HTTPException, Depends, Query
+from fastapi.responses import StreamingResponse
 from motor.motor_asyncio import AsyncIOMotorClient
 from starlette.middleware.cors import CORSMiddleware
 
@@ -24,6 +28,7 @@ from models import (  # noqa: E402
     StatusUpdate,
 )
 import sheets  # noqa: E402
+import whatsapp  # noqa: E402
 
 
 logging.basicConfig(
@@ -74,6 +79,7 @@ async def health():
     return {
         "ok": True,
         "sheets_enabled": sheets.is_enabled(),
+        "whatsapp_enabled": whatsapp.is_enabled(),
         "time": datetime.now(timezone.utc).isoformat(),
     }
 
@@ -102,7 +108,9 @@ async def create_application(payload: ApplicationCreate):
     await db.applications.insert_one({**doc})
     # Best-effort sheets append (does not block on errors)
     synced = await sheets.append_application(doc)
-    logger.info("New application %s synced=%s", app_obj.id, synced)
+    # Best-effort WhatsApp notification
+    notified = await whatsapp.notify_new_application(doc)
+    logger.info("New application %s synced=%s whatsapp=%s", app_obj.id, synced, notified)
     return app_obj
 
 
@@ -128,6 +136,71 @@ async def app_stats(_: dict = Depends(require_admin)):
             counts[r["_id"]] = r["count"]
     total = sum(counts.values())
     return {"total": total, "by_status": counts}
+
+
+CSV_COLUMNS = [
+    "id", "status", "created_at", "updated_at",
+    "full_name", "email", "phone", "location", "profession",
+    "primary_platform", "social_profiles",
+    "audience_size", "audience_demographic", "top_geographies",
+    "analytics_url", "media_kit_url", "portfolio_url",
+    "posting_frequency", "content_output", "content_pillars",
+    "currently_monetising", "monthly_revenue_range", "revenue_streams",
+    "past_brand_collaborations", "notable_brands",
+    "preferred_brand_categories", "restricted_categories", "exclusivity_terms",
+    "twelve_month_goal", "long_term_vision",
+    "expectations_from_edamen", "open_questions", "notes",
+]
+
+
+def _row_to_csv(doc: dict) -> list:
+    out = []
+    for col in CSV_COLUMNS:
+        v = doc.get(col, "")
+        if isinstance(v, list):
+            try:
+                v = json.dumps(v, ensure_ascii=False)
+            except Exception:
+                v = str(v)
+        elif v is None:
+            v = ""
+        out.append(v)
+    return out
+
+
+@api.get("/applications/export")
+async def export_applications(
+    status: Optional[str] = Query(None),
+    search: Optional[str] = Query(None),
+    _: dict = Depends(require_admin),
+):
+    query: dict = {}
+    if status and status in APPLICATION_STATUSES:
+        query["status"] = status
+    if search:
+        # Case-insensitive across a few common fields
+        rx = {"$regex": search, "$options": "i"}
+        query["$or"] = [
+            {"full_name": rx}, {"email": rx}, {"profession": rx},
+            {"location": rx}, {"primary_platform": rx},
+        ]
+
+    docs = await db.applications.find(query, {"_id": 0}).sort("created_at", -1).to_list(10000)
+
+    buf = io.StringIO()
+    writer = csv.writer(buf)
+    writer.writerow(CSV_COLUMNS)
+    for d in docs:
+        writer.writerow(_row_to_csv(d))
+    buf.seek(0)
+
+    ts = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
+    fname = f"edamen-applications-{ts}.csv"
+    return StreamingResponse(
+        iter([buf.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": f'attachment; filename="{fname}"'},
+    )
 
 
 @api.get("/applications/{app_id}", response_model=Application)

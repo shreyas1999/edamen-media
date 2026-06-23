@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { LogOut, RefreshCw, Search, X } from "lucide-react";
+import { LogOut, RefreshCw, Search, X, Download } from "lucide-react";
 import { api, auth } from "@/lib/api";
 import { toast } from "sonner";
 
@@ -96,6 +96,31 @@ export default function AdminDashboard() {
     nav("/admin/login");
   }
 
+  async function exportCsv({ filtered }) {
+    try {
+      const params = {};
+      if (filtered) {
+        if (filter) params.status = filter;
+        if (query.trim()) params.search = query.trim();
+      }
+      const r = await api.get("/applications/export", { params, responseType: "blob" });
+      const blob = new Blob([r.data], { type: "text/csv" });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      const ts = new Date().toISOString().replace(/[:.]/g, "-");
+      const tag = filtered ? "filtered" : "all";
+      a.download = `edamen-applications-${tag}-${ts}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+      toast.success(`Exported ${filtered ? "filtered" : "all"} applications.`);
+    } catch (e) {
+      toast.error("Export failed.");
+    }
+  }
+
   return (
     <div data-testid="admin-dashboard" className="min-h-screen relative">
       <header className="glass hairline sticky top-0 z-30">
@@ -107,6 +132,12 @@ export default function AdminDashboard() {
             <span className="text-[#A1A1AA] text-xs uppercase tracking-[0.28em]">Admin</span>
           </div>
           <div className="flex items-center gap-2">
+            <button data-testid="admin-export-all" onClick={() => exportCsv({ filtered: false })} className="btn-ghost text-xs">
+              <Download size={14} /> Export All
+            </button>
+            <button data-testid="admin-export-filtered" onClick={() => exportCsv({ filtered: true })} className="btn-ghost text-xs">
+              <Download size={14} /> Export Filtered
+            </button>
             <button data-testid="admin-refresh" onClick={refresh} className="btn-ghost text-xs">
               <RefreshCw size={14} /> Refresh
             </button>
