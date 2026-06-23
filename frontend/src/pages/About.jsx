@@ -1,4 +1,3 @@
-import { Link } from "react-router-dom";
 import { ArrowUpRight } from "lucide-react";
 import Reveal from "@/components/Reveal";
 
@@ -73,9 +72,9 @@ export default function About() {
           <h2 className="display text-[#F5F5F5] text-4xl md:text-5xl tracking-tightest max-w-2xl">
             Work with us.
           </h2>
-          <Link to="/apply" data-testid="about-cta" className="btn-primary">
+          <a href="https://calendly.com/edamenmedia/discoverycall" data-testid="about-cta" className="btn-primary" target="_blank" rel="noopener noreferrer">
             Work With Us <ArrowUpRight size={16} />
-          </Link>
+          </a>
         </div>
       </section>
     </div>
